@@ -30,11 +30,11 @@ app.get('/inventory', (req, res) => {
 
 app.get('/owner', (req, res) => {
 	pool.query(`
-		SELECT * 
+		SELECT DISTINCT ON (i.itemid) i.itemid, i.customerid, i.itemname
 		FROM Customer c 
 		JOIN Item i 
-		ON c.customerid=$1 AND i.itemid=$2;`,
-	[req.query.name, req.query.item])
+		ON (i.customerid IS NULL OR c.customerid=i.customerid) AND i.itemid=$1;`,
+	[req.query.item])
 		.then(query => res.status(200).json({ query: query.rows }))
 		.catch(error => res.status(400).json({ error }))
 })
@@ -67,6 +67,18 @@ app.post('/assign', (req, res) => {
 		SET customerid = c.customerid 
 		FROM Customer c 
 		WHERE i.itemname=$1 AND c.customername=$2 
+		RETURNING *;`, 
+	[req.query.item, req.query.name])
+		.then(query => res.status(201).json({ query: query.rows }))
+		.catch(error => res.status(400).json({ error }))
+})
+
+app.post('/assignById', (req, res) => {
+	pool.query(`
+		UPDATE Item i 
+		SET customerid = c.customerid 
+		FROM Customer c 
+		WHERE i.itemid=$1 AND c.customerid=$2 
 		RETURNING *;`, 
 	[req.query.item, req.query.name])
 		.then(query => res.status(201).json({ query: query.rows }))

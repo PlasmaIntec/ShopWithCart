@@ -43,7 +43,7 @@ var selectDevice = () => {
 			total += 1
 			$(".checkout").append(
 				$("<div>")
-					.text(itemName)
+					.text(`Scanned item: ${itemName}`)
 			)
 			$(".total").text(total)
 			$(".error-message").text("")

@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.get('/inventory', (req, res) => {
 	pool.query(`
-		SELECT i.itemname, c.customername 
+		SELECT i.itemname, c.customername, i.itemid, c.customerid
 		FROM Customer c 
 		RIGHT OUTER JOIN Item i
 		ON c.customerid=i.customerid;`

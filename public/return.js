@@ -9,7 +9,7 @@ $(document).ready(() => {
 		}
 	})
 
-	$(document).on("keypress", "#teacher-id", (e) => {
+	$(document).on("keypress", "#cart-id", (e) => {
 		if (e.which == 13 && !e.shiftKey) {
 			e.preventDefault();
 			selectDevice()
@@ -23,8 +23,7 @@ $(document).ready(() => {
 
 var selectDevice = () => {
 	var item = $("#item-id").val()
-	var name = $("#teacher-id").val()
-	if (!item || !name) {
+	if (!item) {
 		$(".error-message").text("incomplete form")
 		return
 	}
@@ -38,7 +37,7 @@ var selectDevice = () => {
 			var itemName = data.query[0].itemname
 			$(".checkout").append(
 				$("<div>")
-					.text(itemName)
+					.text(`Scanned item: ${itemName}`)
 			)
 			$(".total").text(total)
 			$(".error-message").text("")
@@ -50,8 +49,13 @@ var selectDevice = () => {
 }
 
 var returnDevices = () => {
+	var cart = $("#cart-id").val()
 	if (itemIdSet.size == 0) {
 		$(".error-message").text("nothing added")
+		return
+	}
+	if (!cart) {
+		$(".error-message").text("no cart selected")
 		return
 	}
 	Promise.all([...itemIdSet].map((item) => {

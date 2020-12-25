@@ -28,11 +28,33 @@ app.get('/inventory', (req, res) => {
 		.catch(error => res.status(400).json({ error }))
 })
 
+app.get('/owner', (req, res) => {
+	pool.query(`
+		SELECT * 
+		FROM Customer c 
+		JOIN Item i 
+		ON c.customerid=$1 AND i.itemid=$2;`,
+	[req.query.name, req.query.item])
+		.then(query => res.status(200).json({ query: query.rows }))
+		.catch(error => res.status(400).json({ error }))
+})
+
 app.post('/return', (req, res) => {
 	pool.query(`
 		UPDATE Item 
 		SET customerid=null
 		WHERE itemname=$1
+		RETURNING *;`, 
+	[req.query.item])	
+		.then(query => res.status(201).json({ query: query.rows }))
+		.catch(error => res.status(400).json({ error }))
+})
+
+app.post('/returnById', (req, res) => {
+	pool.query(`
+		UPDATE Item 
+		SET customerid=null
+		WHERE itemid=$1
 		RETURNING *;`, 
 	[req.query.item])	
 		.then(query => res.status(201).json({ query: query.rows }))

@@ -16,8 +16,12 @@ $(document).ready(() => {
 		}
 	})
 
+	$(document).on("click", ".add", (e) => {
+		selectDevice()
+	})
+
 	$(document).on("click", ".confirm", (e) => {
-		returnDevices()
+		checkoutDevices()
 	})
 })
 
@@ -33,9 +37,10 @@ var selectDevice = () => {
 		return
 	}
 	$.get(`/owner?${$.param({ item })}`, (data) => {
-		if (data.query.length > 0) {
+		var customerId = data.query[0].customerid
+		var itemName = data.query[0].itemname
+		if (customerId == null) {
 			total += 1
-			var itemName = data.query[0].itemname
 			$(".checkout").append(
 				$("<div>")
 					.text(itemName)
@@ -44,19 +49,24 @@ var selectDevice = () => {
 			$(".error-message").text("")
 			itemIdSet.add(item)
 		} else {
-			$(".error-message").text("invalid id")
+			$(".error-message").text("item checked out")
 		}
 	})
 }
 
-var returnDevices = () => {
+var checkoutDevices = () => {
+	var name = $("#teacher-id").val()
+	if (!name) {
+		$(".error-message").text("incomplete form")
+		return
+	}
 	if (itemIdSet.size == 0) {
 		$(".error-message").text("nothing added")
 		return
 	}
 	Promise.all([...itemIdSet].map((item) => {
 		return new Promise((resolve, reject) => {
-			$.post(`/returnById?${$.param({ item })}`, (data) => {
+			$.post(`/assignById?${$.param({ name, item })}`, (data) => {
 				resolve(data)
 			})
 		})

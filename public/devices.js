@@ -7,48 +7,46 @@ $(document).ready(() => {
 		var name = $("#customer-name").val()
 		var item = $(e.target).data("item-name")
 		$.post(`/assign?${$.param({ name, item })}`, (data) => {
-			var row = $(e.target).parent().parent() // button inside td
-			var data = data.query[0]
-			updateRow(row, data)
+			if (!data.query?.length) {
+				var name = $("#customer-name").val()
+				$(".error-message").text(`${name} does not exist`)
+				return
+			}
+			$.get("/inventory", (data) => {
+				makeTable($(".item-table"), data.query)
+			})
 		})
 	})
 	
 	$(document).on("click", ".remove", (e) => {
 		var item = $(e.target).data("item-name")
 		$.post(`/return?${$.param({ item })}`, (data) => {
-			var row = $(e.target).parent().parent() // button inside td
-			var data = data.query[0]
-			updateRow(row, data)
+			if (!data.query?.length) {
+				var name = $("#customer-name").val()
+				$(".error-message").text(`${name} does not exist`)
+				return
+			}
+			$.get("/inventory", (data) => {
+				makeTable($(".item-table"), data.query)
+			})
 		})
+	})
+
+	$(document).on("keypress", "#cart", (e) => {
+		if (e.which == 13 && !e.shiftKey) {
+			e.preventDefault();
+			var cart = $("#cart").val()
+			$.post(`/emptyCartById?${$.param({ cart })}`, () => {
+				$.get("/inventory", (data) => {
+					makeTable($(".item-table"), data.query)
+				})
+			})			
+		}
 	})
 })
 
-var updateRow = (row, data) => {
-	if (!data) {
-		var name = $("#customer-name").val()
-		$(".error-message").text(`${name} does not exist`)
-		return
-	}
-	$(".error-message").text("")
-	var name = data.customername
-	var nameElement = row.find(".customername")
-	var newElement = $("<td>")
-	if (name) {
-		newElement.text(name).addClass("customername")
-	} else {
-		newElement
-			.addClass("customername")
-			.append(
-				$("<button>")
-					.text("add")
-					.addClass("add")
-					.data("item-name", data.itemname)
-			)
-	}
-	nameElement.replaceWith(newElement)
-}
-
 var makeTable = (container, data) => {
+	container.empty()
 	var table = $("<table>")
 
 	var row = $("<tr>")
@@ -57,13 +55,18 @@ var makeTable = (container, data) => {
 	})
 	row.append($("<th>").text("remove"))
 	table.append(row)
+	data = sortData(data)
 
 	data.forEach((r) => {
 		var row = $("<tr>")
 		Object.values(r).forEach((value, i) => {
 			var className = Object.keys(r)[i]
 			if (value) {
-				row.append($("<td>").text(value).addClass(className))
+				if (r.cartid && i == 0) {
+					row.append($("<td>").text(`    ${value}`).addClass(className))
+				} else {
+					row.append($("<td>").text(value).addClass(className))
+				}
 			} else {
 				row.append(
 					$("<td>")
@@ -90,4 +93,14 @@ var makeTable = (container, data) => {
 		table.append(row)
 	})
 	container.append(table)
+}
+
+var sortData = (data) => {
+	var noCart = data.filter(e => !e.cartid)
+	var withCart = data.filter(e => e.cartid)
+	for (var item of withCart) {
+		var index = noCart.findIndex(e => e.itemid == item.cartid)
+		noCart.splice(index+1, 0, item)
+	}
+	return noCart
 }

@@ -60,7 +60,7 @@ var returnDevices = () => {
 	}
 	Promise.all([...itemIdSet].map((item) => {
 		return new Promise((resolve, reject) => {
-			$.post(`/returnById?${$.param({ item })}`, (data) => {
+			$.post(`/returnToCartById?${$.param({ item, cart })}`, (data) => {
 				resolve(data)
 			})
 		})

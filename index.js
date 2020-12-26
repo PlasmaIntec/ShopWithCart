@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.get('/inventory', (req, res) => {
 	pool.query(`
-		SELECT i.itemname, c.customername, i.itemid, c.customerid
+		SELECT i.itemname, c.customername, i.itemid, c.customerid, i.cartid
 		FROM Customer c 
 		RIGHT OUTER JOIN Item i
 		ON c.customerid=i.customerid;`
@@ -50,6 +50,28 @@ app.post('/return', (req, res) => {
 		.catch(error => res.status(400).json({ error }))
 })
 
+app.post('/returnToCart', (req, res) => {
+	pool.query(`
+		UPDATE Item 
+		SET customerid=null, cartid=$2
+		WHERE itemname=$1
+		RETURNING *;`, 
+	[req.query.item, req.query.cart])	
+		.then(query => res.status(201).json({ query: query.rows }))
+		.catch(error => res.status(400).json({ error }))
+})
+
+app.post('/returnToCartById', (req, res) => {
+	pool.query(`
+		UPDATE Item 
+		SET customerid=null, cartid=$2
+		WHERE itemid=$1
+		RETURNING *;`, 
+	[req.query.item, req.query.cart])	
+		.then(query => res.status(201).json({ query: query.rows }))
+		.catch(error => res.status(400).json({ error }))
+})
+
 app.post('/returnById', (req, res) => {
 	pool.query(`
 		UPDATE Item 
@@ -57,6 +79,16 @@ app.post('/returnById', (req, res) => {
 		WHERE itemid=$1
 		RETURNING *;`, 
 	[req.query.item])	
+		.then(query => res.status(201).json({ query: query.rows }))
+		.catch(error => res.status(400).json({ error }))
+})
+
+app.post('/emptyCartById', (req, res) => {
+	pool.query(`
+		UPDATE Item 
+		SET cartid=null 
+		WHERE cartid=$1;`, 
+	[req.query.cart])	
 		.then(query => res.status(201).json({ query: query.rows }))
 		.catch(error => res.status(400).json({ error }))
 })

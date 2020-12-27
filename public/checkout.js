@@ -6,6 +6,7 @@ $(document).ready(() => {
 		if (e.which == 13 && !e.shiftKey) {
 			e.preventDefault();
 			selectDevice()
+			$("#item-id").val("")
 		}
 	})
 

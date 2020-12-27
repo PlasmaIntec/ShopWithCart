@@ -106,7 +106,7 @@ app.post('/emptyCartById', (req, res) => {
 app.post('/assign', (req, res) => {
 	pool.query(`
 		UPDATE Item i 
-		SET customerid = c.customerid 
+		SET customerid = c.customerid, cartid = null 
 		FROM Customer c 
 		WHERE i.itemname=$1 AND c.customername=$2 
 		RETURNING *;`, 
@@ -118,7 +118,7 @@ app.post('/assign', (req, res) => {
 app.post('/assignById', (req, res) => {
 	pool.query(`
 		UPDATE Item i 
-		SET customerid = c.customerid 
+		SET customerid = c.customerid, cartid = null
 		FROM Customer c 
 		WHERE i.itemid=$1 AND c.customerid=$2 
 		RETURNING *;`, 

@@ -28,6 +28,16 @@ app.get('/inventory', (req, res) => {
 		.catch(error => res.status(400).json({ error }))
 })
 
+app.get('/cart', (req, res) => {
+	pool.query(`
+		SELECT * 
+		FROM Item 
+		WHERE cartid=$1;`,
+	[req.query.cart])
+		.then(query => res.status(200).json({ query: query.rows }))
+		.catch(error => res.status(400).json({ error }))
+})
+
 app.get('/owner', (req, res) => {
 	pool.query(`
 		SELECT DISTINCT ON (i.itemid) i.itemid, i.customerid, i.itemname

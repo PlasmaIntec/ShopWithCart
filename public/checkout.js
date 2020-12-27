@@ -40,14 +40,21 @@ var selectDevice = () => {
 		var customerId = data.query[0].customerid
 		var itemName = data.query[0].itemname
 		if (customerId == null) {
-			total += 1
-			$(".checkout").append(
-				$("<div>")
-					.text(`Scanned item: ${itemName}`)
-			)
-			$(".total").text(total)
-			$(".error-message").text("")
-			itemIdSet.add(item)
+			var cart = item
+			$.get(`/cart?${$.param({ cart })}`, (cartData) => {
+				if (cartData.query.length > 0) {
+					total += cartData.query.length
+				} else {
+					total += 1
+				}
+				$(".checkout").append(
+					$("<div>")
+						.text(`Scanned item: ${itemName}`)
+				)
+				$(".total").text(total)
+				$(".error-message").text("")
+				itemIdSet.add(item)
+			})
 		} else {
 			$(".error-message").text("item checked out")
 		}
